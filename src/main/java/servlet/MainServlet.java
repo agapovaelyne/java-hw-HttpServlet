@@ -21,7 +21,7 @@ public class MainServlet extends HttpServlet {
     }
 
     @Override
-    protected void service(HttpServletRequest req, HttpServletResponse resp) {
+    protected void service(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
             handleRequest(req, resp);
             resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -41,6 +41,10 @@ public class MainServlet extends HttpServlet {
 
         final var path = req.getRequestURI();
         final var method = req.getMethod();
+
+        if (path.equals("/")) {
+            resp.getWriter().write("Welcome!\n");
+        }
 
         if (path.matches("/api/posts/\\d+")) {
             final var id = Long.parseLong(path.substring(path.lastIndexOf("/")));
