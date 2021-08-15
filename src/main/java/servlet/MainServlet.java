@@ -1,6 +1,9 @@
 package servlet;
 
 import controller.PostController;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 import repository.PostRepository;
 import service.PostService;
 
@@ -17,7 +20,11 @@ public class MainServlet extends HttpServlet {
 
     @Override
     public void init() {
-        controller = initPostLayer();
+        //final var context = new AnnotationConfigApplicationContext(PostService.class, PostController.class, PostRepository.class);
+        final var context = new AnnotationConfigApplicationContext("controller","service","repository");
+        final var repository = context.getBean(PostRepository.class);
+        controller = (PostController) context.getBean(PostController.class);
+        final var service = context.getBean(PostService.class);
     }
 
     @Override
@@ -29,12 +36,6 @@ public class MainServlet extends HttpServlet {
             e.printStackTrace();
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
-    }
-
-    protected PostController initPostLayer() {
-        final var repository = new PostRepository();
-        final var service = new PostService(repository);
-        return new PostController(service);
     }
 
     protected void handleRequest(HttpServletRequest req, HttpServletResponse resp) throws IOException {
