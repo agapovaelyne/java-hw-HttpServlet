@@ -1,8 +1,8 @@
 package servlet;
 
+import config.JavaConfig;
 import controller.PostController;
-import repository.PostRepository;
-import service.PostService;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -17,11 +17,14 @@ public class MainServlet extends HttpServlet {
 
     @Override
     public void init() {
-        controller = initPostLayer();
+        final var context = new AnnotationConfigApplicationContext(JavaConfig.class);
+        controller = (PostController) context.getBean("postController");
+        final var repository = context.getBean("postRepository");
+        final var service = context.getBean("postService");
     }
 
     @Override
-    protected void service(HttpServletRequest req, HttpServletResponse resp) {
+    protected void service(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
             handleRequest(req, resp);
             resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -31,16 +34,14 @@ public class MainServlet extends HttpServlet {
         }
     }
 
-    protected PostController initPostLayer() {
-        final var repository = new PostRepository();
-        final var service = new PostService(repository);
-        return new PostController(service);
-    }
-
     protected void handleRequest(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
         final var path = req.getRequestURI();
         final var method = req.getMethod();
+
+        if (path.equals("/")) {
+            resp.getWriter().write("Welcome!\n");
+        }
 
         if (path.matches("/api/posts/\\d+")) {
             final var id = Long.parseLong(path.substring(path.lastIndexOf("/")));
